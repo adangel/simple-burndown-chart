@@ -59,54 +59,75 @@ python -m SimpleHTTPServer 8888
 
 <h2>Example data set: data.csv</h2>
 <pre>
-date,hours
+date,hours,comments
 2013-Apr-12,300
 2013-Apr-13,280
-2013-Apr-14,170
-2013-Apr-15,-1
+2013-Apr-14,200
+2013-Apr-14,220,upscaling
+2013-Apr-15,160
 2013-Apr-16,-1
+2013-Apr-17,-1
 </pre>
 
 <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<!--<script src="http://d3js.org/d3.v3.js" charset="utf-8"></script>-->
 <script>
 var margin = {top: 20, right: 20, bottom: 30, left: 50},
     width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
-var parseDate = d3.time.format("%Y-%b-%d").parse;
-
-var x = d3.time.scale()
-    .range([0, width]);
-
-var y = d3.scale.linear()
-    .range([height, 0]);
-
-var xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom")
-    .ticks(d3.time.days, 1);
-
-var yAxis = d3.svg.axis()
-    .scale(y)
-    .orient("left");
-
-var line = d3.svg.line()
-    .x(function(d) { return x(d.date); })
-    .y(function(d) { return y(d.hours); });
-
-var svg = d3.select("#chart")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 d3.csv("data.csv", function(error, data) {
+var parseDate = d3.time.format("%Y-%b-%d").parse;
+  var timeDomain = [];
+  var lastDate;
   data.forEach(function(d) {
     d.date = parseDate(d.date);
     d.hours = parseInt(d.hours, 10);
+    // collect each input value for the time domain (xaxis)
+    // but skip duplicated values.
+    if (!lastDate || lastDate.getTime() != d.date.getTime()) {
+        timeDomain.push(d.date);
+    }
+    lastDate = d.date;
   });
 
-  x.domain(d3.extent(data, function(d) { return d.date; }));
+  var x = d3.time.scale();
+
+  var y = d3.scale.linear()
+      .range([height, 0]);
+
+  var xAxis = d3.svg.axis()
+      .scale(x)
+      .orient("bottom")
+      .ticks(function() { return timeDomain; });
+
+  var yAxis = d3.svg.axis()
+      .scale(y)
+      .orient("left");
+
+  var line = d3.svg.line()
+      .x(function(d) { return x(d.date); })
+      .y(function(d) { return y(d.hours); });
+
+  var svg = d3.select("#chart")
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+  // calculate the output range for the x axis.
+  // input range is timeDomain.
+  var timeOutputRange = [];
+  var currentX = 0;
+  var diff = width / (timeDomain.length - 1);
+  for (var i = 0; i < timeDomain.length; i++) {
+      timeOutputRange.push(currentX);
+      currentX += diff;
+  }
+  x.range(timeOutputRange);
+  x.domain(timeDomain);
   y.domain([0, d3.max(data, function(d) { return d.hours; })]);
 
   svg.append("g")

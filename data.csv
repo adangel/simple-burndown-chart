@@ -1,6 +1,8 @@
-date,hours
+date,hours,comments
 2013-Apr-12,300
 2013-Apr-13,280
-2013-Apr-14,170
-2013-Apr-15,-1
+2013-Apr-14,200
+2013-Apr-14,220,upscaling
+2013-Apr-15,160
 2013-Apr-16,-1
+2013-Apr-17,-1
