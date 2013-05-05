@@ -1,0 +1,47 @@
+<project>
+    <modelVersion>4.0.0</modelVersion>
+    
+    <groupId>com.github.adangel.simple-burndown-chart</groupId>
+    <artifactId>sample</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>Simple Burndown Chart (Sample)</name>
+    <packaging>war</packaging>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <simple-burndown-chart-js.version>1.0.0-SNAPSHOT</simple-burndown-chart-js.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.github.adangel.simple-burndown-chart</groupId>
+            <artifactId>simple-burndown-chart-js</artifactId>
+            <version>${simple-burndown-chart-js.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <webResources>
+                        <resource>
+                            <directory>src/main/webapp</directory>
+                            <filtering>true</filtering>
+                        </resource>
+                    </webResources>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.mortbay.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>8.1.10.v20130312</version>
+            </plugin>
+        </plugins>
+    </build>
+</project>
