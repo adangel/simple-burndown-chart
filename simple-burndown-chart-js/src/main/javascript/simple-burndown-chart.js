@@ -3,21 +3,24 @@ var margin = {top: 20, right: 20, bottom: 30, left: 50},
     width = 960 - margin.left - margin.right,
     height = 500 - margin.top - margin.bottom;
 
+d3.xhr("data.json", "application/json", function(error, request) {
+  var parseDate = d3.time.format("%Y-%b-%d").parse;
+  var data = JSON.parse(request.responseText);
 
-d3.csv("data.csv", function(error, data) {
-var parseDate = d3.time.format("%Y-%b-%d").parse;
+  var startDate = parseDate(data.start);
+  var endDate = parseDate(data.end);
+  var plannedHours = data.plannedHours;
+  
+  // parse time domain
   var timeDomain = [];
-  var lastDate;
-  data.forEach(function(d) {
-    d.date = parseDate(d.date);
-    d.hours = parseInt(d.hours, 10);
-    // collect each input value for the time domain (xaxis)
-    // but skip duplicated values.
-    if (!lastDate || lastDate.getTime() != d.date.getTime()) {
-        timeDomain.push(d.date);
-    }
-    lastDate = d.date;
-  });
+  for (var i = 0; i < data.timeDomain.length; i++) {
+    timeDomain[i] = parseDate(data.timeDomain[i]);
+  }
+  
+  // parse burndowns
+  for (var i = 0; i < data.burndowns.length; i++) {
+    data.burndowns[i].date = parseDate(data.burndowns[i].date);
+  }
 
   var x = d3.time.scale();
 
@@ -55,7 +58,7 @@ var parseDate = d3.time.format("%Y-%b-%d").parse;
   }
   x.range(timeOutputRange);
   x.domain(timeDomain);
-  y.domain([0, d3.max(data, function(d) { return d.hours; })]);
+  y.domain([0, d3.max(data.burndowns, function(d) { return d.hours; })]);
 
   svg.append("g")
       .attr("class", "x axis")
@@ -72,21 +75,15 @@ var parseDate = d3.time.format("%Y-%b-%d").parse;
       .text("Hours");
 
   // take the first data point and the date of the last point
-  var ideal = [data[0],{date: data[data.length - 1].date, hours: 0}];
+  var ideal = [{date: startDate, hours: plannedHours}, {date: endDate, hours: 0}];
   svg.append("path")
       .datum(ideal)
       .attr("class", "ideal")
       .attr("d", line);
 
 
-  // remove any data points, that have no data yet
-  for (var i = data.length - 1; i >= 0; i--) {
-    if (data[i].hours === -1) {
-      data.splice(i, 1);
-    }
-  }
   svg.append("path")
-      .datum(data)
+      .datum(data.burndowns)
       .attr("class", "line")
       .attr("d", line);
 });

@@ -57,16 +57,37 @@ python -m SimpleHTTPServer 8888
 
 <svg id="chart"></svg>
 
-<h2>Example data set: data.csv</h2>
+<h2>Example data set: data.json</h2>
 <pre>
-date,hours,comments
-2013-Apr-12,300
-2013-Apr-13,280
-2013-Apr-14,200
-2013-Apr-14,220,upscaling
-2013-Apr-15,160
-2013-Apr-16,-1
-2013-Apr-17,-1
+{
+    "start": "2013-Apr-12",
+    "end": "2013-Apr-17",
+    "plannedHours": 300,
+    "burndowns": [
+        {
+            "date": "2013-Apr-12",
+            "hours": 300
+        },
+        {
+            "date": "2013-Apr-13",
+            "hours": 280
+        },
+        {
+            "date": "2013-Apr-14",
+            "hours": 200
+        },
+        {
+            "date": "2013-Apr-14",
+            "hours": 220,
+            "comment": "upscaling"
+        },
+        {
+            "date": "2013-Apr-15",
+            "hours": 160
+        }
+    ],
+    "timeDomain": ["2013-Apr-12", "2013-Apr-13", "2013-Apr-14", "2013-Apr-15", "2013-Apr-16", "2013-Apr-17"]
+}
 </pre>
 
 <script src="/webjars/d3js/3.1.5/d3.min.js" charset="utf-8"></script>
