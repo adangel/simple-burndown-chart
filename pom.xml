@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     
     <groupId>com.github.adangel.simple-burndown-chart</groupId>
-    <artifactId>parent</artifactId>
+    <artifactId>simple-burndown-chart-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <name>Simple Burndown Chart (Parent)</name>
     <packaging>pom</packaging>

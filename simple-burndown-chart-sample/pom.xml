@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     
     <groupId>com.github.adangel.simple-burndown-chart</groupId>
-    <artifactId>sample</artifactId>
+    <artifactId>simple-burndown-chart-sample</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <name>Simple Burndown Chart (Sample)</name>
     <packaging>war</packaging>
