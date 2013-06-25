@@ -1,10 +1,12 @@
 (function() {
 
     window.SBD = {
-        render: function() {
-            var margin = {top: 20, right: 20, bottom: 30, left: 50},
-                width = 960 - margin.left - margin.right,
-                height = 500 - margin.top - margin.bottom,
+        render: function(c) {
+            var c = c || {},
+                margin = c.margin || {top: 20, right: 20, bottom: 30, left: 50},
+                width = (c.width || 960) - margin.left - margin.right,
+                height = (c.height || 500) - margin.top - margin.bottom,
+                chartNodeSelector = c.chartNodeSelector || "#chart",
                 parseDate = d3.time.format("%Y-%b-%d").parse;
 
             d3.xhr("data.json", "application/json", function(error, request) {
@@ -40,7 +42,7 @@
                     .x(function(d) { return x(d.date); })
                     .y(function(d) { return y(d.hours); });
 
-                var svg = d3.select("#chart")
+                var svg = d3.select(chartNodeSelector)
                     .attr("width", width + margin.left + margin.right)
                     .attr("height", height + margin.top + margin.bottom)
                     .append("g")

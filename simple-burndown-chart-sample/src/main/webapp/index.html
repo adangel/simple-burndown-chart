@@ -57,6 +57,10 @@ python -m SimpleHTTPServer 8888
 
 <svg id="chart"></svg>
 
+<br/>
+
+<svg id="chartSmall"></svg>
+
 <h2>Example data set: data.json</h2>
 <pre>
 {
@@ -95,6 +99,7 @@ python -m SimpleHTTPServer 8888
 <script src="/webjars/simple-burndown-chart/${simple-burndown-chart-js.version}/simple-burndown-chart.js"></script>
 <script type="application/javascript">
     SBD.render();
+    SBD.render({chartNodeSelector: "#chartSmall", width: 300, height: 200});
 </script>
 </body>
 </html>
