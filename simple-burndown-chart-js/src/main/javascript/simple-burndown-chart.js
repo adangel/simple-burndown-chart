@@ -20,56 +20,59 @@
             }
 
             function renderData(data) {
-                var startDate = parseDate(data.start),
-                    endDate = parseDate(data.end),
-                    plannedHours = data.plannedHours;
+                var svg = d3.select(chartNodeSelector)
+                        .attr("width", width + margin.left + margin.right)
+                        .attr("height", height + margin.top + margin.bottom)
+                        .append("g")
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")"),
+                    line;
 
+                parseDates(data);
+                line = renderAxis(d3, svg, height, data.timeDomain, data.burndowns);
+                renderIdealLine(d3, svg, line, data.start, data.plannedHours, data.end);
+                renderBurnDown(d3, svg, line, data.burndowns);
+            }
+
+            function parseDates(data) {
+                var i;
+                data.start = parseDate(data.start);
+                data.end = parseDate(data.end);
                 // parse time domain
-                var timeDomain = [];
-                for (var i = 0; i < data.timeDomain.length; i++) {
-                    timeDomain[i] = parseDate(data.timeDomain[i]);
+                for (i = 0; i < data.timeDomain.length; i++) {
+                    data.timeDomain[i] = parseDate(data.timeDomain[i]);
                 }
-
                 // parse burndowns
-                for (var i = 0; i < data.burndowns.length; i++) {
+                for (i = 0; i < data.burndowns.length; i++) {
                     data.burndowns[i].date = parseDate(data.burndowns[i].date);
                 }
+            }
 
-                var x = d3.time.scale(),
-                    y = d3.scale.linear().range([height, 0]);
+            function renderAxis(d3, svg, height, timeDomain, burndowns) {
+                var x, y, xAxis, yAxis, currentX, diff, i, timeOutputRange = [];
 
-                var xAxis = d3.svg.axis()
-                    .scale(x)
-                    .orient("bottom")
-                    .ticks(function() { return timeDomain; });
-
-                var yAxis = d3.svg.axis()
-                    .scale(y)
-                    .orient("left");
-
-                var line = d3.svg.line()
-                    .x(function(d) { return x(d.date); })
-                    .y(function(d) { return y(d.hours); });
-
-                var svg = d3.select(chartNodeSelector)
-                    .attr("width", width + margin.left + margin.right)
-                    .attr("height", height + margin.top + margin.bottom)
-                    .append("g")
-                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
+                x = d3.time.scale();
+                y = d3.scale.linear().range([height, 0]);
 
                 // calculate the output range for the x axis.
                 // input range is timeDomain.
-                var timeOutputRange = [];
-                var currentX = 0;
-                var diff = width / (timeDomain.length - 1);
-                for (var i = 0; i < timeDomain.length; i++) {
+                currentX = 0;
+                diff = width / (timeDomain.length - 1);
+                for (i = 0; i < timeDomain.length; i++) {
                     timeOutputRange.push(currentX);
                     currentX += diff;
                 }
                 x.range(timeOutputRange);
                 x.domain(timeDomain);
-                y.domain([0, d3.max(data.burndowns, function(d) { return d.hours; })]);
+                y.domain([0, d3.max(burndowns, function(d) { return d.hours; })]);
+
+                xAxis = d3.svg.axis()
+                    .scale(x)
+                    .orient("bottom")
+                    .ticks(function() { return timeDomain; });
+
+                yAxis = d3.svg.axis()
+                    .scale(y)
+                    .orient("left");
 
                 svg.append("g")
                     .attr("class", "x axis")
@@ -85,15 +88,23 @@
                     .style("text-anchor", "end")
                     .text("Hours");
 
-                // take the first data point and the date of the last point
+                return d3.svg.line()
+                    .x(function(d) { return x(d.date); })
+                    .y(function(d) { return y(d.hours); });
+            }
+
+            function renderIdealLine(d3, svg, line, startDate, plannedHours, endDate) {
                 var ideal = [{date: startDate, hours: plannedHours}, {date: endDate, hours: 0}];
+
                 svg.append("path")
                     .datum(ideal)
                     .attr("class", "ideal")
                     .attr("d", line);
+            }
 
+            function renderBurnDown(d3, svg, line, burndowns) {
                 svg.append("path")
-                    .datum(data.burndowns)
+                    .datum(burndowns)
                     .attr("class", "line")
                     .attr("d", line);
             }
