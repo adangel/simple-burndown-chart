@@ -1,13 +1,9 @@
 (function() {
+    var parseDate = d3.time.format("%Y-%b-%d").parse;
 
     window.SBD = {
         render: function(data, c) {
-            var c = c || {},
-                margin = c.margin || {top: 20, right: 20, bottom: 30, left: 50},
-                width = (c.width || 960) - margin.left - margin.right,
-                height = (c.height || 500) - margin.top - margin.bottom,
-                chartNodeSelector = c.chartNodeSelector || "#chart",
-                parseDate = d3.time.format("%Y-%b-%d").parse;
+            var config = createConfiguration(c);
 
             if (typeof(data) === "string") {
                 d3.xhr(data, "application/json", function(error, request) {
@@ -19,16 +15,25 @@
                 throw "No data provided for simple burndown chart!"
             }
 
+            function createConfiguration(c) {
+                var c = c || {}, conf = {};
+                conf.margin = c.margin || {top: 20, right: 20, bottom: 30, left: 50};
+                conf.width = (c.width || 960) - conf.margin.left - conf.margin.right;
+                conf.height = (c.height || 500) - conf.margin.top - conf.margin.bottom;
+                conf.chartNodeSelector = c.chartNodeSelector || "#chart";
+                return conf;
+            }
+
             function renderData(data) {
-                var svg = d3.select(chartNodeSelector)
-                        .attr("width", width + margin.left + margin.right)
-                        .attr("height", height + margin.top + margin.bottom)
+                var svg = d3.select(config.chartNodeSelector)
+                        .attr("width", config.width + config.margin.left + config.margin.right)
+                        .attr("height", config.height + config.margin.top + config.margin.bottom)
                         .append("g")
-                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")"),
+                        .attr("transform", "translate(" + config.margin.left + "," + config.margin.top + ")"),
                     line;
 
                 parseDates(data);
-                line = renderAxis(d3, svg, height, data.timeDomain, data.burndowns);
+                line = renderAxis(d3, svg, data.timeDomain, data.burndowns);
                 renderIdealLine(d3, svg, line, data.start, data.plannedHours, data.end);
                 renderBurnDown(d3, svg, line, data.burndowns);
             }
@@ -47,16 +52,16 @@
                 }
             }
 
-            function renderAxis(d3, svg, height, timeDomain, burndowns) {
+            function renderAxis(d3, svg, timeDomain, burndowns) {
                 var x, y, xAxis, yAxis, currentX, diff, i, timeOutputRange = [];
 
                 x = d3.time.scale();
-                y = d3.scale.linear().range([height, 0]);
+                y = d3.scale.linear().range([config.height, 0]);
 
                 // calculate the output range for the x axis.
                 // input range is timeDomain.
                 currentX = 0;
-                diff = width / (timeDomain.length - 1);
+                diff = config.width / (timeDomain.length - 1);
                 for (i = 0; i < timeDomain.length; i++) {
                     timeOutputRange.push(currentX);
                     currentX += diff;
@@ -76,7 +81,7 @@
 
                 svg.append("g")
                     .attr("class", "x axis")
-                    .attr("transform", "translate(0," + height + ")")
+                    .attr("transform", "translate(0," + config.height + ")")
                     .call(xAxis);
 
                 svg.append("g")
