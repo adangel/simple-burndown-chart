@@ -1,7 +1,7 @@
 (function() {
 
     window.SBD = {
-        render: function(c) {
+        render: function(data, c) {
             var c = c || {},
                 margin = c.margin || {top: 20, right: 20, bottom: 30, left: 50},
                 width = (c.width || 960) - margin.left - margin.right,
@@ -9,9 +9,18 @@
                 chartNodeSelector = c.chartNodeSelector || "#chart",
                 parseDate = d3.time.format("%Y-%b-%d").parse;
 
-            d3.xhr("data.json", "application/json", function(error, request) {
-                var data = JSON.parse(request.responseText),
-                    startDate = parseDate(data.start),
+            if (typeof(data) === "string") {
+                d3.xhr(data, "application/json", function(error, request) {
+                    renderData(JSON.parse(request.responseText));
+                });
+            } else if (typeof(data) === "object") {
+                renderData(data);
+            } else {
+                throw "No data provided for simple burndown chart!"
+            }
+
+            function renderData(data) {
+                var startDate = parseDate(data.start),
                     endDate = parseDate(data.end),
                     plannedHours = data.plannedHours;
 
@@ -87,7 +96,7 @@
                     .datum(data.burndowns)
                     .attr("class", "line")
                     .attr("d", line);
-            });
+            }
         }
     };
 })();

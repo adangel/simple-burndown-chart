@@ -55,11 +55,12 @@ python -m SimpleHTTPServer 8888
 </ul>
 
 
-<svg id="chart"></svg>
-
-<br/>
-
+<svg style="float: left" id="chart"></svg>
 <svg id="chartSmall"></svg>
+
+<br style="clear: both"/>
+
+<svg id="chartDataSample"></svg>
 
 <h2>Example data set: data.json</h2>
 <pre>
@@ -98,8 +99,18 @@ python -m SimpleHTTPServer 8888
 <!--<script src="/webjars/d3js/3.1.5/d3.js" charset="utf-8"></script>-->
 <script src="/webjars/simple-burndown-chart/${simple-burndown-chart-js.version}/simple-burndown-chart.js"></script>
 <script type="application/javascript">
-    SBD.render();
-    SBD.render({chartNodeSelector: "#chartSmall", width: 300, height: 200});
+    SBD.render("data.json");
+    SBD.render("data.json", {chartNodeSelector: "#chartSmall", width: 300, height: 200});
+    SBD.render({
+        start: "2013-May-01",
+        end: "2013-May-05",
+        plannedHours: 140,
+        burndowns: [
+              { date: "2013-May-01", hours: 140 },
+              { date: "2013-May-02", hours: 125 }
+        ],
+        timeDomain: ["2013-May-01", "2013-May-02", "2013-May-03", "2013-May-04", "2013-May-05"]
+    }, {chartNodeSelector: "#chartDataSample", width: 300, height: 200});
 </script>
 </body>
 </html>
