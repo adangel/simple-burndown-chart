@@ -31,12 +31,12 @@
                         .attr("height", config.height + config.margin.top + config.margin.bottom)
                         .append("g")
                         .attr("transform", "translate(" + config.margin.left + "," + config.margin.top + ")"),
-                    line;
+                    chart;
 
                 parseDates(data);
-                line = renderAxis(d3, svg, data.timeDomain, data.burndowns);
-                renderIdealLine(d3, svg, line, data.start, data.plannedHours, data.end);
-                renderBurnDown(d3, svg, line, data.burndowns);
+                chart = renderAxis(d3, svg, data.timeDomain, data.burndowns);
+                renderIdealLine(d3, svg, chart.line, data.start, data.plannedHours, data.end);
+                renderBurnDown(d3, svg, chart, data.burndowns);
             }
 
             function parseDates(data) {
@@ -106,9 +106,12 @@
                         .call(yAxis.ticks(10).tickSize(-config.width, 0, 0).tickFormat(""));
                 }
 
-                return d3.svg.line()
-                    .x(function(d) { return x(d.date); })
-                    .y(function(d) { return y(d.hours); });
+                return {
+                    line: d3.svg.line()
+                            .x(function(d) { return x(d.date); })
+                            .y(function(d) { return y(d.hours); }),
+                    x: x,
+                    y: y};
             }
 
             function renderIdealLine(d3, svg, line, startDate, plannedHours, endDate) {
@@ -120,11 +123,39 @@
                     .attr("d", line);
             }
 
-            function renderBurnDown(d3, svg, line, burndowns) {
+            function renderBurnDown(d3, svg, chart, burndowns) {
                 svg.append("path")
                     .datum(burndowns)
                     .attr("class", "line")
-                    .attr("d", line);
+                    .attr("d", chart.line);
+
+                var group = svg.append("g");
+                group.selectAll("path")
+                    .data(burndowns)
+                    .enter().append("path")
+                        .attr("transform", function(d) { return "translate(" + chart.x(d.date) + "," + chart.y(d.hours) + ")"; })
+                        .attr("d", d3.svg.symbol())
+                        .on("mouseover", function(d) {
+                            group.append("text")
+                                .attr("x", chart.x(d.date))
+                                .attr("y", chart.y(d.hours))
+                                .attr("dx", "1em")
+                                .attr("dy", "-1em")
+                                .attr("class", "comment")
+                                .text("Hours: " + d.hours);
+                            if (d.comment) {
+                                group.append("text")
+                                    .attr("x", chart.x(d.date))
+                                    .attr("y", chart.y(d.hours))
+                                    .attr("dx", "1em")
+                                    .attr("dy", "0em")
+                                    .attr("class", "comment")
+                                    .text(d.comment);
+                            }
+                        })
+                        .on("mouseout", function() {
+                            group.selectAll("text").remove();
+                        });
             }
         }
     };
