@@ -21,6 +21,7 @@
                 conf.width = (c.width || 960) - conf.margin.left - conf.margin.right;
                 conf.height = (c.height || 500) - conf.margin.top - conf.margin.bottom;
                 conf.chartNodeSelector = c.chartNodeSelector || "#chart";
+                conf.showGrid = c.showGrid || false;
                 return conf;
             }
 
@@ -92,6 +93,18 @@
                     .attr("x", 0)
                     .style("text-anchor", "end")
                     .text("Hours");
+
+                /** http://www.d3noob.org/2013/01/adding-grid-lines-to-d3js-graph.html */
+                if (config.showGrid) {
+                    svg.append("g")
+                        .attr("class", "grid")
+                        .attr("transform", "translate(0," + config.height + ")")
+                        .call(xAxis.tickSize(-config.height, 0, 0).tickFormat(""));
+
+                    svg.append("g")
+                        .attr("class", "grid")
+                        .call(yAxis.ticks(10).tickSize(-config.width, 0, 0).tickFormat(""));
+                }
 
                 return d3.svg.line()
                     .x(function(d) { return x(d.date); })
