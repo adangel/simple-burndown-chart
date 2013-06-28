@@ -22,6 +22,7 @@
                 conf.height = (c.height || 500) - conf.margin.top - conf.margin.bottom;
                 conf.chartNodeSelector = c.chartNodeSelector || "#chart";
                 conf.showGrid = c.showGrid || false;
+                conf.showComments = c.showComments || false;
                 return conf;
             }
 
@@ -37,6 +38,7 @@
                 chart = renderAxis(d3, svg, data.timeDomain, data.burndowns);
                 renderIdealLine(d3, svg, chart.line, data.start, data.plannedHours, data.end);
                 renderBurnDown(d3, svg, chart, data.burndowns);
+                renderComments(d3, svg, chart, data.burndowns);
             }
 
             function parseDates(data) {
@@ -128,6 +130,12 @@
                     .datum(burndowns)
                     .attr("class", "line")
                     .attr("d", chart.line);
+            }
+
+            function renderComments(d3, svg, chart, burndowns) {
+                if (!config.showComments) {
+                    return;
+                }
 
                 var group = svg.append("g");
                 group.selectAll("path")
@@ -155,6 +163,7 @@
                         })
                         .on("mouseout", function() {
                             group.selectAll("text").remove();
+                            group.selectAll("rect").remove();
                         });
             }
         }

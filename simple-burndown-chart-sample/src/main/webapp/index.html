@@ -120,7 +120,7 @@ python -m SimpleHTTPServer 8888
 <script src="/webjars/simple-burndown-chart/${simple-burndown-chart-js.version}/simple-burndown-chart.js"></script>
 <script type="application/javascript">
     SBD.render("data.json");
-    SBD.render("data.json", {chartNodeSelector: "#chartSmall", width: 300, height: 200, showGrid: true});
+    SBD.render("data.json", {chartNodeSelector: "#chartSmall", width: 300, height: 200, showGrid: true, showComments: true});
     SBD.render({
         start: "2013-May-01",
         end: "2013-May-05",
