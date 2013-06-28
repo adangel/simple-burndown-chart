@@ -6,9 +6,13 @@
             var config = createConfiguration(c);
 
             if (typeof(data) === "string") {
-                d3.xhr(data, "application/json", function(error, request) {
-                    renderData(JSON.parse(request.responseText));
-                });
+                if (data.indexOf("{") === 0) {
+                    renderData(JSON.parse(data));
+                } else {
+                    d3.xhr(data, "application/json", function(error, request) {
+                        renderData(JSON.parse(request.responseText));
+                    });
+                }
             } else if (typeof(data) === "object") {
                 renderData(data);
             } else {
@@ -27,12 +31,15 @@
             }
 
             function renderData(data) {
-                var svg = d3.select(config.chartNodeSelector)
-                        .attr("width", config.width + config.margin.left + config.margin.right)
-                        .attr("height", config.height + config.margin.top + config.margin.bottom)
-                        .append("g")
-                        .attr("transform", "translate(" + config.margin.left + "," + config.margin.top + ")"),
-                    chart;
+                var chart, svg = d3.select(config.chartNodeSelector);
+                svg.selectAll("*").remove();
+                if (svg.node().nodeName !== "svg") {
+                    svg = svg.append("svg:svg");
+                }
+                svg.attr("width", config.width + config.margin.left + config.margin.right)
+                   .attr("height", config.height + config.margin.top + config.margin.bottom);
+                svg = svg.append("g")
+                   .attr("transform", "translate(" + config.margin.left + "," + config.margin.top + ")");
 
                 parseDates(data);
                 chart = renderAxis(d3, svg, data.timeDomain, data.burndowns);

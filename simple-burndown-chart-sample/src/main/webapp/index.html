@@ -10,15 +10,6 @@
 </head>
 <body>
 
-<!--
-
-To develop, you'll need to host this file on a server, as
-an async request is used to get the data.
-E.g.:
-python -m SimpleHTTPServer 8888
-
--->
-
 <h1>Simple Burndown Chart</h1>
 
 <ul>
@@ -27,15 +18,11 @@ python -m SimpleHTTPServer 8888
 </ul>
 
 
-<svg style="float: left" id="chart"></svg>
-<svg id="chartSmall"></svg>
+<div style="float: left" id="chart"></div>
 
-<br style="clear: both"/>
-
-<svg id="chartDataSample"></svg>
-
-<h2>Example data set: data.json</h2>
-<pre>
+<strong>Data:</strong>
+<br/>
+<textarea id="data" rows="30" cols="40">
 {
     "start": "2013-Apr-12",
     "end": "2013-Apr-17",
@@ -63,23 +50,37 @@ python -m SimpleHTTPServer 8888
             "hours": 160
         }
     ],
-    "timeDomain": ["2013-Apr-12", "2013-Apr-13", "2013-Apr-14", "2013-Apr-15", "2013-Apr-16", "2013-Apr-17"]
+    "timeDomain": ["2013-Apr-12",
+                   "2013-Apr-13",
+                   "2013-Apr-14",
+                   "2013-Apr-15",
+                   "2013-Apr-16",
+                   "2013-Apr-17"]
 }
-</pre>
+</textarea>
+<br/>
+<strong>Configuration:</strong>
+<br/>
+<input type="checkbox" id="showGrid"><label for="showGrid">showGrid</label><br/>
+<input type="checkbox" id="showComments"><label for="showComments">showComments</label><br/>
+<br style="clear: both"/>
+
 
 <script type="application/javascript">
-    SBD.render("data.json");
-    SBD.render("data.json", {chartNodeSelector: "#chartSmall", width: 300, height: 200, showGrid: true, showComments: true});
-    SBD.render({
-        start: "2013-May-01",
-        end: "2013-May-05",
-        plannedHours: 140,
-        burndowns: [
-              { date: "2013-May-01", hours: 140 },
-              { date: "2013-May-02", hours: 125 }
-        ],
-        timeDomain: ["2013-May-01", "2013-May-02", "2013-May-03", "2013-May-04", "2013-May-05"]
-    }, {chartNodeSelector: "#chartDataSample", width: 300, height: 200});
+    var config = { showGrid: document.getElementById("showGrid").checked,
+                   showComments: document.getElementById("showComments").checked };
+    function renderTextArea() { SBD.render(document.getElementById("data").value, config); }
+    document.getElementById("data").onchange = renderTextArea;
+    document.getElementById("showGrid").onclick = function() {
+        config.showGrid = document.getElementById("showGrid").checked;
+        renderTextArea();
+    }
+    document.getElementById("showComments").onclick = function() {
+        config.showComments = document.getElementById("showComments").checked;
+        renderTextArea();
+    }
+
+    renderTextArea();
 </script>
 </body>
 </html>
