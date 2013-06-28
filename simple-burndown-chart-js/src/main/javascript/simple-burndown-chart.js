@@ -1,9 +1,9 @@
 (function() {
-    var parseDate = d3.time.format("%Y-%b-%d").parse;
 
     window.SBD = {
         render: function(data, c) {
-            var config = createConfiguration(c);
+            var config = createConfiguration(c),
+                parseDate = d3.time.format(config.dateFormat).parse;
 
             if (typeof(data) === "string") {
                 if (data.indexOf("{") === 0) {
@@ -27,6 +27,7 @@
                 conf.chartNodeSelector = c.chartNodeSelector || "#chart";
                 conf.showGrid = c.showGrid || false;
                 conf.showComments = c.showComments || false;
+                conf.dateFormat = c.dateFormat || "%Y-%b-%d";
                 return conf;
             }
 
