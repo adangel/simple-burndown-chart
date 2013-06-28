@@ -3,49 +3,12 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8" />
     <title>Simple Burndown Chart</title>
-    <style type="text/css">
-
-    svg {
-        font: 10px sans-serif;
-        border: 3px lightgray solid;
-        border-radius: 10px;
-    }
-
-    .axis path,
-    .axis line {
-        fill: none;
-        stroke: #000;
-        shape-rendering: crispEdges;
-    }
-
-    .x.axis path {
-        display: none;
-    }
-
-    .line {
-        fill: none;
-        stroke: steelblue;
-        stroke-width: 3px;
-    }
-
-    .ideal {
-        fill: none;
-        stroke: red;
-        stroke-width: 3px;
-    }
-
-    </style>
+    <link type="text/css" rel="stylesheet" href="simple-burndown-chart.css"/>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <!--<script src="http://d3js.org/d3.v3.js" charset="utf-8"></script>-->
+    <script src="simple-burndown-chart.js"></script>
 </head>
 <body>
-
-<!--
-
-To develop, you'll need to host this file on a server, as
-an async request is used to get the data.
-E.g.:
-python -m SimpleHTTPServer 8888
-
--->
 
 <h1>Simple Burndown Chart</h1>
 
@@ -55,114 +18,69 @@ python -m SimpleHTTPServer 8888
 </ul>
 
 
-<svg id="chart"></svg>
+<div style="float: left" id="chart"></div>
 
-<h2>Example data set: data.csv</h2>
-<pre>
-date,hours,comments
-2013-Apr-12,300
-2013-Apr-13,280
-2013-Apr-14,200
-2013-Apr-14,220,upscaling
-2013-Apr-15,160
-2013-Apr-16,-1
-2013-Apr-17,-1
-</pre>
+<strong>Data:</strong>
+<br/>
+<textarea id="data" rows="30" cols="40">
+{
+    "start": "2013-Apr-12",
+    "end": "2013-Apr-17",
+    "plannedHours": 300,
+    "burndowns": [
+        {
+            "date": "2013-Apr-12",
+            "hours": 300
+        },
+        {
+            "date": "2013-Apr-13",
+            "hours": 280
+        },
+        {
+            "date": "2013-Apr-14",
+            "hours": 200
+        },
+        {
+            "date": "2013-Apr-14",
+            "hours": 220,
+            "comment": "upscaling"
+        },
+        {
+            "date": "2013-Apr-15",
+            "hours": 160
+        }
+    ],
+    "timeDomain": ["2013-Apr-12",
+                   "2013-Apr-13",
+                   "2013-Apr-14",
+                   "2013-Apr-15",
+                   "2013-Apr-16",
+                   "2013-Apr-17"]
+}
+</textarea>
+<br/>
+<strong>Configuration:</strong>
+<br/>
+<input type="checkbox" id="showGrid"><label for="showGrid">showGrid</label><br/>
+<input type="checkbox" id="showComments"><label for="showComments">showComments</label><br/>
+<br style="clear: both"/>
 
-<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-<!--<script src="http://d3js.org/d3.v3.js" charset="utf-8"></script>-->
-<script>
-var margin = {top: 20, right: 20, bottom: 30, left: 50},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
 
-
-d3.csv("data.csv", function(error, data) {
-var parseDate = d3.time.format("%Y-%b-%d").parse;
-  var timeDomain = [];
-  var lastDate;
-  data.forEach(function(d) {
-    d.date = parseDate(d.date);
-    d.hours = parseInt(d.hours, 10);
-    // collect each input value for the time domain (xaxis)
-    // but skip duplicated values.
-    if (!lastDate || lastDate.getTime() != d.date.getTime()) {
-        timeDomain.push(d.date);
+<script type="application/javascript">
+    var config = { showGrid: document.getElementById("showGrid").checked,
+                   showComments: document.getElementById("showComments").checked };
+    function renderTextArea() { SBD.render(document.getElementById("data").value, config); }
+    document.getElementById("data").onchange = renderTextArea;
+    document.getElementById("showGrid").onclick = function() {
+        config.showGrid = document.getElementById("showGrid").checked;
+        renderTextArea();
     }
-    lastDate = d.date;
-  });
-
-  var x = d3.time.scale();
-
-  var y = d3.scale.linear()
-      .range([height, 0]);
-
-  var xAxis = d3.svg.axis()
-      .scale(x)
-      .orient("bottom")
-      .ticks(function() { return timeDomain; });
-
-  var yAxis = d3.svg.axis()
-      .scale(y)
-      .orient("left");
-
-  var line = d3.svg.line()
-      .x(function(d) { return x(d.date); })
-      .y(function(d) { return y(d.hours); });
-
-  var svg = d3.select("#chart")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-      .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-
-  // calculate the output range for the x axis.
-  // input range is timeDomain.
-  var timeOutputRange = [];
-  var currentX = 0;
-  var diff = width / (timeDomain.length - 1);
-  for (var i = 0; i < timeDomain.length; i++) {
-      timeOutputRange.push(currentX);
-      currentX += diff;
-  }
-  x.range(timeOutputRange);
-  x.domain(timeDomain);
-  y.domain([0, d3.max(data, function(d) { return d.hours; })]);
-
-  svg.append("g")
-      .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
-      .call(xAxis);
-
-  svg.append("g")
-      .attr("class", "y axis")
-      .call(yAxis)
-    .append("text")
-      .attr("y", "-1em")
-      .attr("x", 0)
-      .style("text-anchor", "end")
-      .text("Hours");
-
-  // take the first data point and the date of the last point
-  var ideal = [data[0],{date: data[data.length - 1].date, hours: 0}];
-  svg.append("path")
-      .datum(ideal)
-      .attr("class", "ideal")
-      .attr("d", line);
-
-
-  // remove any data points, that have no data yet
-  for (var i = data.length - 1; i >= 0; i--) {
-    if (data[i].hours === -1) {
-      data.splice(i, 1);
+    document.getElementById("showComments").onclick = function() {
+        config.showComments = document.getElementById("showComments").checked;
+        renderTextArea();
     }
-  }
-  svg.append("path")
-      .datum(data)
-      .attr("class", "line")
-      .attr("d", line);
-});
+
+    renderTextArea();
 </script>
 </body>
 </html>
