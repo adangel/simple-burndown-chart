@@ -25,7 +25,7 @@ limitations under the License.
 
     <name>Simple Burndown Chart JavaScript Widget</name>
     <description>A simple javascript widget to draw a burndown chart</description>
-    <url>https://github.com/adangel/simple-burndown-chart</url>
+    <url>http://adangel.github.io/simple-burndown-chart/</url>
     <inceptionYear>2013</inceptionYear>
     <licenses>
         <license>
@@ -51,6 +51,7 @@ limitations under the License.
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
         <version>7</version>
+        <relativePath/>
     </parent>
 
     <properties>
