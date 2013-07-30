@@ -60,7 +60,7 @@
                 chart = renderAxis(d3, svg, data.timeDomain, data.burndowns);
                 renderIdealLine(d3, svg, chart.line, data.start, data.plannedHours, data.end);
                 renderBurnDown(d3, svg, chart, data.burndowns);
-                renderComments(d3, svg, chart, data.burndowns);
+                renderComments(d3, svg, chart, data);
             }
 
             function parseDates(data) {
@@ -154,37 +154,68 @@
                     .attr("d", chart.line);
             }
 
-            function renderComments(d3, svg, chart, burndowns) {
+            function renderComments(d3, svg, chart, data) {
                 if (!config.showComments) {
                     return;
                 }
 
-                var group = svg.append("g");
+                var group = svg.append("g"),
+                    maxX = config.width,
+                    maxY = config.height,
+                    dateFormatter = d3.time.format("%a, %e %b %Y");
+
                 group.selectAll("path")
-                    .data(burndowns)
+                    .data(data.burndowns)
                     .enter().append("path")
                         .attr("transform", function(d) { return "translate(" + chart.x(d.date) + "," + chart.y(d.hours) + ")"; })
                         .attr("d", d3.svg.symbol())
                         .on("mouseover", function(d) {
-                            group.append("text")
-                                .attr("x", chart.x(d.date))
-                                .attr("y", chart.y(d.hours))
-                                .attr("dx", "1em")
-                                .attr("dy", "-1em")
-                                .attr("class", "comment")
-                                .text("Hours: " + d.hours);
+                            var x = chart.x(d.date) + 20,
+                                y = chart.y(d.hours) - 50,
+                                margin = 10,
+                                width = 200,
+                                height = 100;
+
+                            if (x + width > maxX) {
+                                x = maxX - width;
+                            }
+                            if (y + height > maxY) {
+                                y = maxY - height;
+                            }
+                            if (x < 0) {
+                                x = margin;
+                            }
+                            if (y < 0) {
+                                y = margin;
+                            }
+
+                            group.append("rect")
+                                .attr("x", x)
+                                .attr("y", y)
+                                .attr("width", width)
+                                .attr("height", height)
+                                .attr("rx", 20)
+                                .attr("ry", 20)
+                                .attr("class", "comment");
+
+                            // using foreignObject, see http://ajaxian.com/archives/foreignobject-hey-youve-got-html-in-my-svg
+                            var div = group.append("foreignObject")
+                                .attr("x", x + margin)
+                                .attr("y", y + margin)
+                                .attr("width", width - 2 * margin)
+                                .attr("height", height - 2 * margin)
+                                .append("xhtml:body")
+                                .append("xhtml:div");
+
+                            div.append("div").text(dateFormatter(d.date));
+                            div.append("div").html('<div class="comment">Hours: ' + d.hours + "</div>");
+
                             if (d.comment) {
-                                group.append("text")
-                                    .attr("x", chart.x(d.date))
-                                    .attr("y", chart.y(d.hours))
-                                    .attr("dx", "1em")
-                                    .attr("dy", "0em")
-                                    .attr("class", "comment")
-                                    .text(d.comment);
+                                div.append("div").html('<div class="comment">' + d.comment + "</div>");
                             }
                         })
                         .on("mouseout", function() {
-                            group.selectAll("text").remove();
+                            group.selectAll("foreignObject").remove();
                             group.selectAll("rect").remove();
                         });
             }

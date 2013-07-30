@@ -57,6 +57,7 @@ svg {
       stroke-width: 0;
 }
 
-text.comment {
-    font-weight: bold;
+rect.comment {
+    stroke: gray;
+    fill: lightyellow;
 }
