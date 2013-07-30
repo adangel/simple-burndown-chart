@@ -1,9 +1,23 @@
+/*
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ */
+
 (function() {
-    var parseDate = d3.time.format("%Y-%b-%d").parse;
 
     window.SBD = {
         render: function(data, c) {
-            var config = createConfiguration(c);
+            var config = createConfiguration(c),
+                parseDate = d3.time.format(config.dateFormat).parse;
 
             if (typeof(data) === "string") {
                 if (data.indexOf("{") === 0) {
@@ -27,6 +41,7 @@
                 conf.chartNodeSelector = c.chartNodeSelector || "#chart";
                 conf.showGrid = c.showGrid || false;
                 conf.showComments = c.showComments || false;
+                conf.dateFormat = c.dateFormat || "%Y-%b-%d";
                 return conf;
             }
 
@@ -45,7 +60,7 @@
                 chart = renderAxis(d3, svg, data.timeDomain, data.burndowns);
                 renderIdealLine(d3, svg, chart.line, data.start, data.plannedHours, data.end);
                 renderBurnDown(d3, svg, chart, data.burndowns);
-                renderComments(d3, svg, chart, data.burndowns);
+                renderComments(d3, svg, chart, data);
             }
 
             function parseDates(data) {
@@ -139,37 +154,68 @@
                     .attr("d", chart.line);
             }
 
-            function renderComments(d3, svg, chart, burndowns) {
+            function renderComments(d3, svg, chart, data) {
                 if (!config.showComments) {
                     return;
                 }
 
-                var group = svg.append("g");
+                var group = svg.append("g"),
+                    maxX = config.width,
+                    maxY = config.height,
+                    dateFormatter = d3.time.format("%a, %e %b %Y");
+
                 group.selectAll("path")
-                    .data(burndowns)
+                    .data(data.burndowns)
                     .enter().append("path")
                         .attr("transform", function(d) { return "translate(" + chart.x(d.date) + "," + chart.y(d.hours) + ")"; })
                         .attr("d", d3.svg.symbol())
                         .on("mouseover", function(d) {
-                            group.append("text")
-                                .attr("x", chart.x(d.date))
-                                .attr("y", chart.y(d.hours))
-                                .attr("dx", "1em")
-                                .attr("dy", "-1em")
-                                .attr("class", "comment")
-                                .text("Hours: " + d.hours);
+                            var x = chart.x(d.date) + 20,
+                                y = chart.y(d.hours) - 50,
+                                margin = 10,
+                                width = 200,
+                                height = 100;
+
+                            if (x + width > maxX) {
+                                x = maxX - width;
+                            }
+                            if (y + height > maxY) {
+                                y = maxY - height;
+                            }
+                            if (x < 0) {
+                                x = margin;
+                            }
+                            if (y < 0) {
+                                y = margin;
+                            }
+
+                            group.append("rect")
+                                .attr("x", x)
+                                .attr("y", y)
+                                .attr("width", width)
+                                .attr("height", height)
+                                .attr("rx", 20)
+                                .attr("ry", 20)
+                                .attr("class", "comment");
+
+                            // using foreignObject, see http://ajaxian.com/archives/foreignobject-hey-youve-got-html-in-my-svg
+                            var div = group.append("foreignObject")
+                                .attr("x", x + margin)
+                                .attr("y", y + margin)
+                                .attr("width", width - 2 * margin)
+                                .attr("height", height - 2 * margin)
+                                .append("xhtml:body")
+                                .append("xhtml:div");
+
+                            div.append("div").text(dateFormatter(d.date));
+                            div.append("div").html('<div class="comment">Hours: ' + d.hours + "</div>");
+
                             if (d.comment) {
-                                group.append("text")
-                                    .attr("x", chart.x(d.date))
-                                    .attr("y", chart.y(d.hours))
-                                    .attr("dx", "1em")
-                                    .attr("dy", "0em")
-                                    .attr("class", "comment")
-                                    .text(d.comment);
+                                div.append("div").html('<div class="comment">' + d.comment + "</div>");
                             }
                         })
                         .on("mouseout", function() {
-                            group.selectAll("text").remove();
+                            group.selectAll("foreignObject").remove();
                             group.selectAll("rect").remove();
                         });
             }
