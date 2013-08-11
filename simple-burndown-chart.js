@@ -216,6 +216,10 @@
                         })
                         .on("mouseout", function() {
                             group.selectAll("foreignObject").remove();
+                            var toDelete = document.getElementsByTagName("foreignObject");
+                            for (var i = 0; i < toDelete.length; i++) {
+                                toDelete[i].parentNode.removeChild(toDelete[i]);
+                            }
                             group.selectAll("rect").remove();
                         });
             }
